@@ -1,0 +1,7 @@
+anthropic:
+  api_key:
+
+claude:
+  model:
+  max_tokens: 2048
+  itinerary_max_tokens: 2048

@@ -1,0 +1,24 @@
+# Binaries
+/main
+/mcp-server/mcp-server
+/mcp-go-sample-app
+/client/client
+*.exe
+
+# Test output
+*.test
+*.out
+coverage.html
+
+# Go workspace
+go.work
+go.work.sum
+
+# Vendor
+vendor/
+
+# OS
+.DS_Store
+
+# congiguration files
+config.yaml
