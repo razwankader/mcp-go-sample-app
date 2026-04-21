@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"mcp-go-sample-app/chat"
+	"mcp-go-sample-app/claude"
 	"mcp-go-sample-app/config"
 	mcpclient "mcp-go-sample-app/mcp-client"
 	"os/exec"
@@ -37,7 +38,7 @@ func main() {
 	defer client.Close()
 
 	clients := map[string]*mcpclient.MCPClient{"docs": client}
-	claude := chat.NewClaude(cfg.Anthropic.APIKey, cfg.Claude.Model)
+	claude := claude.NewClaude(cfg.Anthropic.APIKey, cfg.Claude.Model)
 
 	cliChat := chat.NewCliChat(client, clients, claude)
 	app := chat.NewCliApp(cliChat)

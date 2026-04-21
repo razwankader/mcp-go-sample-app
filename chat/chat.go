@@ -3,18 +3,19 @@ package chat
 import (
 	"context"
 	"fmt"
+	"mcp-go-sample-app/claude"
 	mcpclient "mcp-go-sample-app/mcp-client"
 
 	"github.com/anthropics/anthropic-sdk-go"
 )
 
 type Chat struct {
-	Claude   *Claude
+	Claude   *claude.Claude
 	Clients  map[string]*mcpclient.MCPClient
 	Messages []anthropic.MessageParam
 }
 
-func NewChat(claude *Claude, clients map[string]*mcpclient.MCPClient) *Chat {
+func NewChat(claude *claude.Claude, clients map[string]*mcpclient.MCPClient) *Chat {
 	return &Chat{
 		Claude:  claude,
 		Clients: clients,
@@ -38,10 +39,10 @@ func (c *Chat) RunMessages(ctx context.Context) (string, error) {
 		c.Messages = append(c.Messages, resp.ToParam())
 
 		if resp.StopReason != anthropic.StopReasonToolUse {
-			return TextFromMessage(resp), nil
+			return claude.TextFromMessage(resp), nil
 		}
 
-		if text := TextFromMessage(resp); text != "" {
+		if text := claude.TextFromMessage(resp); text != "" {
 			fmt.Println(text)
 		}
 

@@ -3,11 +3,10 @@ package mcpclient
 import (
 	"context"
 	"fmt"
+	"mcp-go-sample-app/claude"
 	"mcp-go-sample-app/config"
-	"strings"
 
 	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -74,8 +73,6 @@ func (c *MCPClient) Close() error {
 }
 
 func SamplingCallback(ctx context.Context, req *mcp.CreateMessageRequest) (*mcp.CreateMessageResult, error) {
-	fmt.Println("balllllllll")
-
 	var claudeMessages []anthropic.MessageParam
 	for _, m := range req.Params.Messages {
 		textContent, ok := m.Content.(*mcp.TextContent)
@@ -95,33 +92,15 @@ func SamplingCallback(ctx context.Context, req *mcp.CreateMessageRequest) (*mcp.
 		return nil, fmt.Errorf("Failed to load config: %v", err)
 	}
 
-	params := anthropic.MessageNewParams{
-		Model:     anthropic.Model(cfg.Claude.Model),
-		MaxTokens: 8000,
-		Messages:  claudeMessages,
-	}
-
-	claudeClient := anthropic.NewClient(option.WithAPIKey(cfg.Anthropic.APIKey))
-	resp, err := claudeClient.Messages.New(ctx, params)
+	claudeClient := claude.NewClaude(cfg.Anthropic.APIKey, cfg.Claude.Model)
+	resp, err := claudeClient.Chat(ctx, claudeMessages, "", nil)
 	if err != nil {
 		return nil, fmt.Errorf("calling Claude: %w", err)
 	}
 
-	text := TextFromMessage(resp)
-
 	return &mcp.CreateMessageResult{
 		Content: &mcp.TextContent{
-			Text: text,
+			Text: claude.TextFromMessage(resp),
 		},
 	}, nil
-}
-
-func TextFromMessage(msg *anthropic.Message) string {
-	var parts []string
-	for _, block := range msg.Content {
-		if tb, ok := block.AsAny().(anthropic.TextBlock); ok {
-			parts = append(parts, tb.Text)
-		}
-	}
-	return strings.Join(parts, "\n")
 }

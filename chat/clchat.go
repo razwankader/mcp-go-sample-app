@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"mcp-go-sample-app/claude"
 	mcpclient "mcp-go-sample-app/mcp-client"
 
 	"github.com/anthropics/anthropic-sdk-go"
@@ -17,7 +18,7 @@ type CliChat struct {
 	docClient *mcpclient.MCPClient
 }
 
-func NewCliChat(docClient *mcpclient.MCPClient, clients map[string]*mcpclient.MCPClient, claude *Claude) *CliChat {
+func NewCliChat(docClient *mcpclient.MCPClient, clients map[string]*mcpclient.MCPClient, claude *claude.Claude) *CliChat {
 	return &CliChat{
 		Chat:      Chat{Claude: claude, Clients: clients},
 		docClient: docClient,
