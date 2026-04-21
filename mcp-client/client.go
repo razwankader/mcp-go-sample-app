@@ -20,7 +20,9 @@ func New() *MCPClient {
 		Name:    "sample-mcp-client",
 		Version: "v1.0.0",
 	}, &mcp.ClientOptions{
-		CreateMessageHandler: SamplingCallback,
+		CreateMessageHandler:        SamplingCallback,
+		LoggingMessageHandler:       LoggingCallback,
+		ProgressNotificationHandler: ProgressCallback,
 	})
 
 	return &MCPClient{
@@ -33,6 +35,14 @@ func (c *MCPClient) Connect(ctx context.Context, transport *mcp.CommandTransport
 	if err != nil {
 		return err
 	}
+
+	err = session.SetLoggingLevel(ctx, &mcp.SetLoggingLevelParams{
+		Level: "info",
+	})
+	if err != nil {
+		return err
+	}
+
 	c.session = session
 	return nil
 }
@@ -103,4 +113,13 @@ func SamplingCallback(ctx context.Context, req *mcp.CreateMessageRequest) (*mcp.
 			Text: claude.TextFromMessage(resp),
 		},
 	}, nil
+}
+
+func LoggingCallback(ctx context.Context, req *mcp.LoggingMessageRequest) {
+	fmt.Printf("Log from server: %s\n", req.Params.Data)
+}
+
+func ProgressCallback(ctx context.Context, req *mcp.ProgressNotificationClientRequest) {
+	percentage := (req.Params.Progress / req.Params.Total) * 100
+	fmt.Printf("%s %.f%%\n", req.Params.Message, percentage)
 }
