@@ -12,7 +12,7 @@ import (
 
 var docs = map[string]string{
 	"deposition.md":   "This deposition covers the testimony of Angela Smith, P.E.",
-	"report.pdf":      "The report details the state of a 20m condenser tower.",
+	"report221.pdf":   "The report details the state of a 20m condenser tower.",
 	"financials.docx": "These financials outline the project's budget and expenditures.",
 	"outlook.pdf":     "This document presents the projected future performance of the system.",
 	"plan.md":         "The plan outlines the steps for the project's implementation.",
@@ -117,6 +117,51 @@ func formatDoccumentPrompt(ctx context.Context, req *mcp.GetPromptRequest) (*mcp
 	}, nil
 }
 
+type summarizeDocInput struct {
+	Name string `json:"name" jsonschema:"the name of the document to summerize"`
+}
+
+type summarizeDocOutput struct {
+	SummerizeContent string `json:"content" jsonschema:"the summerize content of the document"`
+}
+
+// summarizeDocumentContent is a tool that summarizes the content of a document given its name.
+// It uses Sampling feature to call the model through MCP client
+func summarizeDocumentContent(ctx context.Context, req *mcp.CallToolRequest, input summarizeDocInput) (*mcp.CallToolResult, summarizeDocOutput, error) {
+	content, exists := docs[input.Name]
+	if !exists {
+		return nil, summarizeDocOutput{}, fmt.Errorf("document not found: %s", input.Name)
+	}
+
+	prompt := fmt.Sprintf(`Please bold the following text: %s`, content)
+
+	result, err := req.Session.CreateMessage(ctx, &mcp.CreateMessageParams{
+		Messages: []*mcp.SamplingMessage{
+			{
+				Role: mcp.Role("user"),
+				Content: &mcp.TextContent{
+					Text: prompt,
+				},
+			},
+		},
+		MaxTokens:    4000,
+		SystemPrompt: "You are a helpful research assistant.",
+	})
+	if err != nil {
+		return nil, summarizeDocOutput{}, err
+	}
+
+	var summaryText string
+	textContent, ok := result.Content.(*mcp.TextContent)
+	if ok {
+		summaryText = textContent.Text
+	} else {
+		return nil, summarizeDocOutput{}, fmt.Errorf("unexpected content type: %T", result.Content)
+	}
+
+	return nil, summarizeDocOutput{SummerizeContent: summaryText}, nil
+}
+
 func main() {
 	server := mcp.NewServer(&mcp.Implementation{
 		Name:    "sample-mcp-server",
@@ -132,6 +177,11 @@ func main() {
 		Name:        "edit",
 		Description: "Edits the content of a document given its name, old string and new string",
 	}, editDocument)
+
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "summarize",
+		Description: "Summarize the content of a document given its name through the sampling feature",
+	}, summarizeDocumentContent)
 
 	server.AddResource(&mcp.Resource{
 		Name:        "list",
