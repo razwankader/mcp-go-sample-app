@@ -21,9 +21,16 @@ type ClaudeConfig struct {
 	ItineraryMaxTokens int64
 }
 
+var cfg Config
+
+// App contains app configurations
+func Get() Config {
+	return cfg
+}
+
 // Load reads config.yaml (from the working directory) and overlays
 // environment variables. ANTHROPIC_API_KEY must be set in the environment.
-func Load() (*Config, error) {
+func Load() error {
 	v := viper.New()
 
 	v.SetConfigName("config")
@@ -31,14 +38,14 @@ func Load() (*Config, error) {
 	v.AddConfigPath(".")
 
 	if err := v.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("read config.yaml: %w", err)
+		return fmt.Errorf("read config.yaml: %w", err)
 	}
 
 	v.SetEnvPrefix("")
 	v.AutomaticEnv()
 	v.BindEnv("anthropic.api_key", "ANTHROPIC_API_KEY")
 
-	return &Config{
+	cfg = Config{
 		Anthropic: AnthropicConfig{
 			APIKey: v.GetString("anthropic.api_key"),
 		},
@@ -47,5 +54,7 @@ func Load() (*Config, error) {
 			MaxTokens:          v.GetInt64("claude.max_tokens"),
 			ItineraryMaxTokens: v.GetInt64("claude.itinerary_max_tokens"),
 		},
-	}, nil
+	}
+
+	return nil
 }

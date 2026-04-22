@@ -3,6 +3,7 @@ package mcpclient
 import (
 	"context"
 	"fmt"
+	"log"
 	"mcp-go-sample-app/claude"
 	"mcp-go-sample-app/config"
 
@@ -97,10 +98,7 @@ func SamplingCallback(ctx context.Context, req *mcp.CreateMessageRequest) (*mcp.
 		}
 	}
 
-	cfg, err := config.Load()
-	if err != nil {
-		return nil, fmt.Errorf("Failed to load config: %v", err)
-	}
+	cfg := config.Get()
 
 	claudeClient := claude.NewClaude(cfg.Anthropic.APIKey, cfg.Claude.Model)
 	resp, err := claudeClient.Chat(ctx, claudeMessages, "", nil)
@@ -116,10 +114,10 @@ func SamplingCallback(ctx context.Context, req *mcp.CreateMessageRequest) (*mcp.
 }
 
 func LoggingCallback(ctx context.Context, req *mcp.LoggingMessageRequest) {
-	fmt.Printf("Log from server: %s\n", req.Params.Data)
+	log.Printf("Log from server: %s\n", req.Params.Data)
 }
 
 func ProgressCallback(ctx context.Context, req *mcp.ProgressNotificationClientRequest) {
 	percentage := (req.Params.Progress / req.Params.Total) * 100
-	fmt.Printf("%s %.f%%\n", req.Params.Message, percentage)
+	log.Printf("%s %.f%%\n", req.Params.Message, percentage)
 }

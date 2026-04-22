@@ -129,11 +129,6 @@ type summarizeDocOutput struct {
 // summarizeDocumentContent is a tool that summarizes the content of a document given its name.
 // It uses Sampling feature to call the model through MCP client
 func summarizeDocumentContent(ctx context.Context, req *mcp.CallToolRequest, input summarizeDocInput) (*mcp.CallToolResult, summarizeDocOutput, error) {
-	req.Session.NotifyProgress(ctx, &mcp.ProgressNotificationParams{
-		Message:  "Summarize Progress",
-		Progress: 0.3,
-		Total:    1.0,
-	})
 	req.Session.Log(ctx, &mcp.LoggingMessageParams{
 		Data:  fmt.Sprintf("Fetching %s content to summarize", input.Name),
 		Level: "info",
@@ -144,19 +139,20 @@ func summarizeDocumentContent(ctx context.Context, req *mcp.CallToolRequest, inp
 		return nil, summarizeDocOutput{}, fmt.Errorf("document not found: %s", input.Name)
 	}
 
-	time.Sleep(5 * time.Second) // simulate a long running process of summarization
-
-	prompt := fmt.Sprintf(`Please summarize the following text: %s`, content)
+	time.Sleep(3 * time.Second) // simulate a long running process of summarization
 
 	req.Session.NotifyProgress(ctx, &mcp.ProgressNotificationParams{
-		Message:  "Summarize Progress",
-		Progress: 0.6,
+		Message:  "Summarization Progress",
+		Progress: 0.3,
 		Total:    1.0,
 	})
+
 	req.Session.Log(ctx, &mcp.LoggingMessageParams{
-		Data:  "Sending prompt to mcp client for calling Claude through sampling feature",
+		Data:  "Sending prompt to mcp client through sampling feature for interacting with Claude",
 		Level: "info",
 	})
+
+	prompt := fmt.Sprintf(`Please summarize the following text: %s`, content)
 
 	result, err := req.Session.CreateMessage(ctx, &mcp.CreateMessageParams{
 		Messages: []*mcp.SamplingMessage{
@@ -176,6 +172,17 @@ func summarizeDocumentContent(ctx context.Context, req *mcp.CallToolRequest, inp
 
 	time.Sleep(5 * time.Second) // simulate a long running process of summarization
 
+	req.Session.NotifyProgress(ctx, &mcp.ProgressNotificationParams{
+		Message:  "Summarization Progress",
+		Progress: 0.6,
+		Total:    1.0,
+	})
+
+	req.Session.Log(ctx, &mcp.LoggingMessageParams{
+		Data:  "Received response from mcp client and parsing the response",
+		Level: "info",
+	})
+
 	var summaryText string
 	textContent, ok := result.Content.(*mcp.TextContent)
 	if ok {
@@ -184,14 +191,12 @@ func summarizeDocumentContent(ctx context.Context, req *mcp.CallToolRequest, inp
 		return nil, summarizeDocOutput{}, fmt.Errorf("unexpected content type: %T", result.Content)
 	}
 
+	time.Sleep(3 * time.Second) // simulate a long running process of summarization
+
 	req.Session.NotifyProgress(ctx, &mcp.ProgressNotificationParams{
-		Message:  "Summarize Progress",
+		Message:  "Summarization Progress",
 		Progress: 1.0,
 		Total:    1.0,
-	})
-	req.Session.Log(ctx, &mcp.LoggingMessageParams{
-		Data:  fmt.Sprintf("Received response from mcp client: \n %s", summaryText),
-		Level: "info",
 	})
 
 	return nil, summarizeDocOutput{SummerizeContent: summaryText}, nil
