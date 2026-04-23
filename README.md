@@ -55,63 +55,64 @@ A comprehensive Go application that showcases the full capabilities of the Model
    go build
    ```
 
-### Usage
+## Usage
 
-#### Interactive Chat
+### Interactive Chat
 ```bash
 ./mcp-go-sample-app chat
 ```
 
-#### Interactive Chat (with MCP roots feature)
+### Interactive Chat (with MCP roots feature)
 ```bash
 ./mcp-go-sample-app chat -d /<local-machine-base-path>/Documents -d /<local-machine-base-path>/Desktop
 ```
 Roots are a way to grant MCP servers access to specific files and folders on your local machine. This means the MCP server currently has access only to the **Documents** and **Desktop** folders on your local machine.
 
-#### List All Available In-Memory Documents
+### List All Available In-Memory Documents
 ```bash
 ./mcp-go-sample-app docs
 ```
 
-#### Document Summarization (MCP Sampling feature)
+### Document Summarization (MCP Sampling feature)
 ```bash
 ./mcp-go-sample-app summarize --doc report.pdf
 ```
-#### Help
+### Help
 ```bash
 ./mcp-go-sample-app --help
 ./mcp-go-sample-app chat --help
+./mcp-go-sample-app summarize --help
 ```
 
-### MCP Feature Examples
+## MCP Feature Examples
 
 The in-memory document management showcases various MCP capabilities:
 
-#### MCP Tools Example
+### MCP Tools Example
 Claude automatically calls MCP tools based on your prompts. Here are common scenarios:
 
-**Read Tool - Accessing Document Content**
+Read Tool - Accessing Document Content
 ```bash
 ./mcp-go-sample-app chat
 > read the content of @report.pdf
 # Claude automatically calls the read MCP tool to fetch report.pdf content
 ```
 
-**Edit Tool - Modifying Document Content**
+Edit Tool - Modifying Document Content
 ```bash
 ./mcp-go-sample-app chat
 > replace the text "Go MCP SDKs" with "Python MCP SDKs" in report.pdf  
 # Claude automatically calls the edit MCP tool to update the document
 ```
 
-#### MCP Resources Example  
+### MCP Resources Example  
 ```bash
 # List all documents (MCP Resource)
 ./mcp-go-sample-app docs
 # Accesses MCP resource at docs://documents to list available documents
 
 ```
-#### MCP Prompts Example
+### MCP Prompts Example
 ```bash
 # Interactive chat mode
 ./mcp-go-sample-app chat
@@ -120,7 +121,7 @@ Claude automatically calls MCP tools based on your prompts. Here are common scen
 # Executes MCP prompt template to reformat document in Markdown
 ```
 
-#### MCP Sampling Example
+### MCP Sampling Example
 ```bash
 # The MCP server uses sampling to call Claude AI via MCP client for document summarization
 ./mcp-go-sample-app summarize --doc report.pdf
