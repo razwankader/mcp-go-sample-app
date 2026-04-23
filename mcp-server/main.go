@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	videoconverter "mcp-go-sample-app/video-converter"
+	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -202,6 +206,150 @@ func summarizeDocumentContent(ctx context.Context, req *mcp.CallToolRequest, inp
 	return nil, summarizeDocOutput{SummerizeContent: summaryText}, nil
 }
 
+type rootInfo struct {
+	Name string `json:"name"`
+	URI  string `json:"uri"`
+}
+
+type rootsOutput struct {
+	Roots []rootInfo `json:"roots"`
+}
+
+// listRoots is a tool that lists all available roots (specific files and folders paths
+// on your local machine which are accessible for MCP server) in the MCP client.
+func listRoots(ctx context.Context, req *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, rootsOutput, error) {
+	session := req.Session
+
+	resp, err := session.ListRoots(ctx, &mcp.ListRootsParams{})
+	if err != nil {
+		return nil, rootsOutput{}, err
+	}
+
+	out := rootsOutput{
+		Roots: make([]rootInfo, 0, len(resp.Roots)),
+	}
+
+	for _, r := range resp.Roots {
+		out.Roots = append(out.Roots, rootInfo{
+			Name: r.Name,
+			URI:  r.URI,
+		})
+	}
+
+	return nil, out, nil
+}
+
+type ReadDirInput struct {
+	Path string `json:"path"`
+}
+
+type ReadDirOutput struct {
+	Entries []string `json:"entries"`
+}
+
+// readDir is a tool that reads the contents of a directory given its path.
+// It checks if the requested path is within the allowed roots before reading.
+func readDir(ctx context.Context, req *mcp.CallToolRequest, input ReadDirInput) (*mcp.CallToolResult, ReadDirOutput, error) {
+	absPath, err := filepath.Abs(input.Path)
+	if err != nil {
+		return nil, ReadDirOutput{}, err
+	}
+
+	allowed, err := isPathAllowed(ctx, req.Session, absPath)
+	if err != nil {
+		return nil, ReadDirOutput{}, err
+	}
+
+	if !allowed {
+		return nil, ReadDirOutput{}, fmt.Errorf("error: can only read directories within a root")
+	}
+
+	entries, err := os.ReadDir(absPath)
+	if err != nil {
+		return nil, ReadDirOutput{}, err
+	}
+
+	var names []string
+	for _, e := range entries {
+		names = append(names, e.Name())
+	}
+
+	out := ReadDirOutput{
+		Entries: names,
+	}
+
+	return nil, out, nil
+}
+
+type VideoInput struct {
+	FilePath string `json:"file_path"`
+	Format   string `json:"format"`
+}
+
+type VideoOutput struct {
+	Message string `json:"message"`
+}
+
+// convertVideoHandler is a tool that converts a video file to a specified format.
+// It validates the input file path, checks if it's within the allowed roots, and simulates the conversion process.
+func convertVideo(ctx context.Context, req *mcp.CallToolRequest, input VideoInput) (*mcp.CallToolResult, VideoOutput, error) {
+	session := req.Session
+
+	if err := videoconverter.ValidateInput(input.FilePath); err != nil {
+		return nil, VideoOutput{}, err
+	}
+
+	absFilePath, err := filepath.Abs(input.FilePath)
+	if err != nil {
+		return nil, VideoOutput{}, err
+	}
+
+	allowed, err := isPathAllowed(ctx, session, absFilePath)
+	if err != nil {
+		return nil, VideoOutput{}, err
+	}
+	if !allowed {
+		return nil, VideoOutput{}, fmt.Errorf("access to path is not allowed: %s", input.FilePath)
+	}
+
+	resultMsg, err := videoconverter.Convert(input.FilePath, input.Format)
+	if err != nil {
+		return nil, VideoOutput{}, err
+	}
+
+	out := VideoOutput{
+		Message: resultMsg,
+	}
+
+	return nil, out, nil
+}
+
+func isPathAllowed(ctx context.Context, session *mcp.ServerSession, requestedPath string) (bool, error) {
+	resp, err := session.ListRoots(ctx, &mcp.ListRootsParams{})
+	if err != nil {
+		return false, err
+	}
+
+	reqAbsPath, err := filepath.Abs(requestedPath)
+	if err != nil {
+		return false, err
+	}
+
+	for _, root := range resp.Roots {
+		u, err := url.Parse(root.URI)
+		if err != nil {
+			continue
+		}
+
+		rel, err := filepath.Rel(u.Path, reqAbsPath)
+		if err == nil && !strings.HasPrefix(rel, "..") {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 func main() {
 	server := mcp.NewServer(&mcp.Implementation{
 		Name:    "sample-mcp-server",
@@ -222,6 +370,21 @@ func main() {
 		Name:        "summarize",
 		Description: "Summarize the content of a document given its name through the sampling feature",
 	}, summarizeDocumentContent)
+
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "list-roots",
+		Description: "List all available roots",
+	}, listRoots)
+
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "read-dir",
+		Description: "Read the contents of a directory",
+	}, readDir)
+
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "convert-video",
+		Description: "Convert a video file to a specified format",
+	}, convertVideo)
 
 	server.AddResource(&mcp.Resource{
 		Name:        "list",

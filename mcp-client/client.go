@@ -48,6 +48,10 @@ func (c *MCPClient) Connect(ctx context.Context, transport *mcp.CommandTransport
 	return nil
 }
 
+func (c *MCPClient) AddRoots(ctx context.Context, roots []*mcp.Root) {
+	c.client.AddRoots(roots...)
+}
+
 func (c *MCPClient) ListTools(ctx context.Context) (*mcp.ListToolsResult, error) {
 	return c.session.ListTools(ctx, &mcp.ListToolsParams{})
 }
