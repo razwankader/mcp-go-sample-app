@@ -63,18 +63,17 @@ A comprehensive Go application that showcases the full capabilities of the Model
 ```
 
 #### Interactive Chat (with MCP roots feature)
-Roots are a way to grant MCP servers access to specific files and folders on your local machine.
 ```bash
 ./mcp-go-sample-app chat -d /<local-machine-base-path>/Documents -d /<local-machine-base-path>/Desktop
 ```
-This means the MCP server currently has access only to the **Documents** and **Desktop** folders on your local machine.
+Roots are a way to grant MCP servers access to specific files and folders on your local machine. This means the MCP server currently has access only to the **Documents** and **Desktop** folders on your local machine.
 
 #### List All Available In-Memory Documents
 ```bash
 ./mcp-go-sample-app docs
 ```
 
-#### Document Summarization (MCP Sampling feature)**
+#### Document Summarization (MCP Sampling feature)
 ```bash
 ./mcp-go-sample-app summarize --doc report.pdf
 ```
@@ -130,35 +129,35 @@ Claude automatically calls MCP tools based on your prompts. Here are common scen
 
 ## MCP Topics Covered
 
-### 1. **MCP Transport**
+### 1. MCP Transport
 - **Stdio Transport**: Communication between client and server via standard input/output
 - **Command Transport**: Spawning MCP server subprocess from client
 
-### 2. **MCP Tools**
+### 2. MCP Tools
 - **Tool Registration**: Registering tools on the server side
 - **Tool Calling**: Client-side tool invocation with parameters
 - **Tool Results**: Handling structured tool responses
 
-### 3. **MCP Resources**
+### 3. MCP Resources
 - **Resource Registration**: Static and templated resource URIs
 - **Resource Reading**: Accessing document content via MCP resources
 - **File System Roots**: Managing workspace directories
 
-### 4. **MCP Prompts**
+### 4. MCP Prompts
 - **Prompt Templates**: Reusable prompt definitions with arguments
 - **Prompt Execution**: Client-side prompt invocation
 
-### 5. **MCP Sampling**
+### 5. MCP Sampling
 - **Sampling Callbacks**: Server-side AI model integration
 - **Message Translation**: Converting MCP messages to provider-specific formats
 - **Response Handling**: Processing AI responses back to MCP format
 
-### 6. **MCP Notifications**
+### 6. MCP Notifications
 - **Progress Notifications**: Real-time progress updates for long operations
 - **Logging Notifications**: Structured logging with configurable levels
 - **Progress Callbacks**: Client-side progress tracking
 
-### 7. **MCP Lifecycle**
+### 7. MCP Lifecycle
 - **Client Initialization**: Setting up MCP clients with handlers
 - **Session Management**: Connection lifecycle and cleanup
 - **Error Handling**: Robust error propagation and recovery
