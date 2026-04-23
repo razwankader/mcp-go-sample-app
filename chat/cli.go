@@ -21,8 +21,8 @@ func NewCliApp(agent *CliChat) *CliApp {
 func (a *CliApp) initialize(ctx context.Context) {
 	ids, err := a.agent.ListDocIDs(ctx)
 	if err == nil && len(ids) > 0 {
-		fmt.Printf("Documents: %s\n", strings.Join(ids, ", "))
-		fmt.Println("Tip: mention docs with @docname, run prompts with /format <docname>")
+		fmt.Printf("In-Memory Documents: %s\n\n", strings.Join(ids, ", "))
+		fmt.Println("Tips:\n 1. Read or edit document content by mentioning document name with @<docname>\n\n 2. Run prompts with /format <docname>")
 	}
 
 	prompts, err := a.agent.ListPrompts(ctx)
@@ -31,7 +31,6 @@ func (a *CliApp) initialize(ctx context.Context) {
 		for _, p := range prompts {
 			names = append(names, "/"+p.Name)
 		}
-		fmt.Printf("Prompts: %s\n", strings.Join(names, ", "))
 	}
 	fmt.Println()
 }
