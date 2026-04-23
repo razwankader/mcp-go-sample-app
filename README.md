@@ -2,6 +2,10 @@
 
 A comprehensive Go application that showcases the full capabilities of the Model Context Protocol (MCP), including tools, resources, prompts, sampling, logging, notifications, and root management, with the help of a CLI interface, document management, and AI-powered chat capabilities.
 
+## Reason behind this repository:
+
+After completing MCP courses [Introduction to Model Context Protocol](https://anthropic.skilljar.com/introduction-to-model-context-protocol) and [Model Context Protocol: Advanced Topics](https://anthropic.skilljar.com/model-context-protocol-advanced-topics) offered by Anthropic, where the examples were primarily implemented using the MCP Python SDK, I set out to recreate similar examples in Go by using [MCP Go SDK](https://github.com/modelcontextprotocol/go-sdk). This sample project aims to cover most of the MCP concepts presented in those courses, providing a Go-based reference implementation.
+
 ## Features
 
 - **MCP Tools**: Complete tool registration, calling, and result handling
